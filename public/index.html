@@ -345,7 +345,9 @@
 </head>
 <body>
   <input type="text" id="hidden-keyboard-input" style="position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; border: none; padding: 0; margin: 0;">
-
+  <div id="deck-debug" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.85); color: #00ff00; padding: 8px; z-index: 10000; font-family: monospace; font-size: 12px; border-radius: 5px; pointer-events: none;">
+    iPad DeltaY: <span id="debug-val-y">0</span>
+  </div>
   <main id="deck-container">
     <section class="panel">
       <div id="nav-menu">

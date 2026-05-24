@@ -344,6 +344,7 @@
   </style>
 </head>
 <body>
+  <input type="text" id="hidden-keyboard-input" style="position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; border: none; padding: 0; margin: 0;">
   <div id="deck-debug" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.85); color: #00ff00; padding: 8px; z-index: 10000; font-family: monospace; font-size: 12px; border-radius: 5px; pointer-events: none;">
     iPad DeltaY: <span id="debug-val-y">0</span>
   </div>
@@ -500,18 +501,12 @@
         </button>
         <div class="remote-panel">
           <div class="remote-title">Trackpad Virtual</div>
-          <div id="virtual-trackpad" class="deck-button remote-trackpad" style="min-height:200px; display:flex; align-items:center; justify-content:center;">
-            <span class="label">Usa la pantalla táctil como trackpad</span>
+          <div id="virtual-trackpad" class="deck-button remote-trackpad" style="min-height:600px; display:flex; align-items:center; justify-content:center; width:100%;">
+            <span class="label">Usa la pantalla táctil como trackpad (1 dedo = clic izq, 2 dedos = clic der)</span>
           </div>
           <div class="remote-actions">
-            <button class="deck-button remote-button" data-endpoint="system" data-commandtype="mouse-click-left" data-payload="">
-              <span class="label">Click Izquierdo</span>
-            </button>
-            <button class="deck-button remote-button" data-endpoint="system" data-commandtype="mouse-click-right" data-payload="">
-              <span class="label">Click Derecho</span>
-            </button>
-            <button class="deck-button remote-button" data-endpoint="system" data-commandtype="key-search" data-payload="">
-              <span class="label">Buscar (Ctrl+F)</span>
+            <button class="deck-button remote-button" id="btn-keyboard">
+              <span class="label">Abrir Teclado</span>
             </button>
           </div>
         </div>
@@ -630,7 +625,7 @@
       return response.json();
     }
 
-    // Virtual trackpad handling
+    // Virtual trackpad handling con soporte multitáctil (1 dedo = clic izq, 2 dedos = clic der)
     (function setupTrackpad() {
       const trackpad = document.getElementById('virtual-trackpad');
       if (!trackpad) return;
@@ -638,6 +633,7 @@
       let last = null;
       let startPos = null;
       let startTime = 0;
+      let isMoving = false;
       const TAP_MAX_MOVEMENT = 10; // pixels
       const TAP_MAX_TIME = 250; // ms
 
@@ -646,10 +642,12 @@
         last = { x: t.clientX, y: t.clientY };
         startPos = { x: t.clientX, y: t.clientY };
         startTime = Date.now();
+        isMoving = false;
       }, { passive: true });
 
       trackpad.addEventListener('touchmove', (e) => {
         e.preventDefault();
+        isMoving = true;
         const currentTouch = e.touches[0];
         if (!last) {
           last = { x: currentTouch.clientX, y: currentTouch.clientY };
@@ -682,15 +680,53 @@
         const endPos = last || startPos;
         const moved = Math.hypot((endPos.x - startPos.x), (endPos.y - startPos.y));
 
-        // If it was a quick tap without movement, treat as left click
-        if (dt < TAP_MAX_TIME && moved < TAP_MAX_MOVEMENT) {
-          sendRemoteAction('mouse-click-left', {}).catch(() => {});
+        // Si el toque duró menos de 250ms y el dedo casi no se movió, es un CLICK
+        if (!isMoving && dt < TAP_MAX_TIME && moved < TAP_MAX_MOVEMENT) {
+          e.preventDefault();
+          
+          // Detectar cuántos dedos tocaron la pantalla
+          const numFingers = e.changedTouches.length;
+          
+          if (numFingers === 1) {
+            // Un dedo = Clic Izquierdo
+            sendRemoteAction('mouse-click-left', {}).catch(() => {});
+          } else if (numFingers === 2 || (e.touches.length === 1 && numFingers > 1)) {
+            // Dos dedos = Clic Derecho
+            sendRemoteAction('mouse-click-right', {}).catch(() => {});
+          }
         }
 
         last = null;
         startPos = null;
       });
     })();
+
+    // Teclado remoto compatible con iPad
+    const kbdBtn = document.getElementById('btn-keyboard');
+    const kbdInput = document.getElementById('hidden-keyboard-input');
+
+    if (kbdBtn && kbdInput) {
+      kbdBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        kbdInput.focus(); // Safari lo ejecutará limpiamente
+      });
+
+      kbdInput.addEventListener('input', (e) => {
+        const text = e.target.value;
+        if (text.length > 0) {
+          sendRemoteAction('type-character', { char: text }).catch(() => {});
+          kbdInput.value = ''; // Limpieza inmediata para el siguiente carácter
+        }
+      });
+
+      kbdInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          sendRemoteAction('press-key', { key: 'enter' }).catch(() => {});
+        } else if (e.key === 'Backspace') {
+          sendRemoteAction('press-key', { key: 'backspace' }).catch(() => {});
+        }
+      });
+    }
 
     window.addEventListener('load', () => {
       setActiveView('view-system');

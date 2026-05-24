@@ -271,12 +271,29 @@ app.post('/api/system/action', (req, res) => {
     }
 
     case 'mouse-click-left': {
-      command = 'hyprctl dispatch mouse 272';
+      command = `wlrctl pointer click left`;
       break;
     }
 
     case 'mouse-click-right': {
-      command = 'hyprctl dispatch mouse 273';
+      command = `wlrctl pointer click right`;
+      break;
+    }
+
+    case 'type-character': {
+      const char = payload?.char || payload?.payload?.char || '';
+      if (char) {
+        // Mandamos el carácter de forma nativa a la ventana activa
+        command = `hyprctl dispatch sendshortcut , ${char}, active`;
+      }
+      break;
+    }
+
+    case 'press-key': {
+      const key = payload?.key || payload?.payload?.key || '';
+      if (key) {
+        command = `hyprctl dispatch sendshortcut , ${key}, active`;
+      }
       break;
     }
 

@@ -1,0 +1,280 @@
+/*
+  Tokyo Night — Cyber-Zen theme
+  Structured CSS file for Omarchy Deck frontend
+  - Glassmorphism / Crystal Bubble cards
+  - Neon accents: cyan, magenta, violet
+  - Centered button alignment (Flexbox)
+  - Water Ripple effect on :active
+*/
+
+/* ==========================
+   Root variables (colors & common tokens)
+   ========================== */
+:root {
+  --bg-ink: #0f0c1b; /* deep Tokyo Night base */
+  --accent-cyan: #00f0ff; /* electric cyan */
+  --accent-magenta: #ff007f; /* bright magenta */
+  --accent-violet: #7b2cbf; /* violet */
+  --glass-bg: rgba(255,255,255,0.04);
+  --glass-contrast: rgba(124,58,237,0.08);
+  --text-primary: #e8eef8;
+  --text-secondary: rgba(232,238,248,0.65);
+  --muted: rgba(232,238,248,0.28);
+  --shadow-deep: 0 18px 50px rgba(2,2,8,0.7);
+  --glass-border: 1px solid rgba(123,44,191,0.18);
+  --glass-highlight: 0 6px 30px rgba(123,44,191,0.08), inset 0 1px 0 rgba(255,255,255,0.02);
+  --ripple-color: rgba(0, 240, 255, 0.18);
+  --button-radius: 18px;
+  --panel-radius: 28px;
+  font-family: Inter, 'JetBrains Mono', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+/* Reset + base layout */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; }
+body {
+  min-height: 100vh;
+  background: #0c0a1c; /* Ultra-deep neon-prime black-purple background */
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Ambient background glow */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(circle at 20% 30%, rgba(123,44,191,0.08), transparent 12%),
+                    radial-gradient(circle at 80% 70%, rgba(255,0,127,0.04), transparent 8%);
+}
+
+/* ==========================
+   Top-left console debug
+   ========================== */
+#deck-debug {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10000;
+  background: linear-gradient(180deg, rgba(0,0,0,0.72), rgba(10,6,18,0.45));
+  color: var(--accent-cyan);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  pointer-events: none;
+  border: 1px solid rgba(0,240,255,0.06);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.6), 0 0 18px rgba(0,240,255,0.03) inset;
+}
+
+/* Hidden keyboard input (accessible but visually hidden) */
+#hidden-keyboard-input {
+  position: absolute;
+  width: 1px; height: 1px; opacity: 0; border: none; padding: 0; margin: 0;
+  left: -10px; top: -10px;
+}
+
+/* ==========================
+   Container / Panels
+   ========================== */
+#deck-container { position: relative; z-index: 2; width: 100%; min-height: 100vh; display:flex; flex-direction:column; align-items:center; gap:20px; padding:28px 20px; }
+.panel {
+  position: relative;
+  width: 100%; max-width: 1200px; border-radius: var(--panel-radius);
+  /* Glassmorphism Liquid Neon Crystal */
+  background: linear-gradient(135deg, rgba(25, 20, 50, 0.6) 0%, rgba(10, 5, 25, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px;
+  box-shadow: 0 18px 50px rgba(2,2,8,0.8), inset 0 4px 20px rgba(123,44,191,0.08);
+}
+
+/* Faceted crystal reflex overlay on panels */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 20%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+  border-radius: var(--panel-radius) var(--panel-radius) 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+h1 { margin: 0; font-size: clamp(1.25rem, 2.5vw, 2rem); font-weight: 800; letter-spacing: 1px; color: var(--text-primary); }
+.help { margin: 6px 0 0 0; color: var(--text-secondary); font-size: 0.95rem; max-width: 600px; }
+
+/* ==========================
+   Navigation & Buttons
+   All main buttons centered with Flexbox
+   ========================== */
+#nav-menu { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 12px; }
+.nav-button,
+.deck-button,
+.remote-button {
+  display: flex;            /* center text & icons PERFECTLY */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  min-height: 60px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  color: var(--text-primary);
+  transition: transform 180ms cubic-bezier(.2,.9,.2,1), box-shadow 200ms ease, border-color 200ms ease;
+  position: relative;
+  overflow: hidden;
+  /* Glassmorphism Liquid Neon Crystal for all interactive surfaces */
+  background: linear-gradient(135deg, rgba(25, 20, 50, 0.6) 0%, rgba(10, 5, 25, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Faceted crystal reflex on all buttons */
+.nav-button::before,
+.deck-button::before,
+.remote-button::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 40%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+  border-radius: 12px 12px 0 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.nav-button { font-weight:700; }
+.nav-button.active { box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.8); }
+
+.deck-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.remote-panel { grid-column: span 3; border-radius: 18px; padding: 18px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.03); }
+
+/* Deck buttons (cards) - Crystal Bubble effect */
+.deck-button {
+  min-height: 140px;
+  padding: 20px;
+  border-radius: 12px;
+  /* Glassmorphism Liquid Neon Crystal on cards */
+  background: linear-gradient(135deg, rgba(25, 20, 50, 0.6) 0%, rgba(10, 5, 25, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  box-shadow: 0 22px 60px rgba(2,2,8,0.85), inset 0 8px 30px rgba(123,44,191,0.08);
+}
+
+.deck-button .label { font-weight: 800; font-size: 1rem; z-index: 2; text-align: center; width: 100%; }
+.deck-button .meta { font-size: 0.85rem; color: var(--text-secondary); z-index: 2; text-align: center; width: 100%; }
+
+.deck-button.special { border: 1px solid rgba(255,0,127,0.12); box-shadow: 0 22px 60px rgba(123,44,191,0.12); }
+
+/* Hover / active visual responses */
+.deck-button:hover, .nav-button:hover { transform: translateY(-4px); }
+.deck-button:active, .nav-button:active { transform: translateY(0); }
+
+/* ========== LIQUID NEON CRYSTAL: Precise neon accents per section ========== */
+
+/* SISTEMA (Cian Eléctrico) */
+.nav-button[data-view="view-system"] {
+  border: 1.5px solid #00f0ff;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.3);
+}
+#view-system .deck-button {
+  border: 1.5px solid #00f0ff;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+/* APLICACIONES (Magenta Neón) */
+.nav-button[data-view="view-apps"] {
+  border: 1.5px solid #ff007f;
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.6), inset 0 0 15px rgba(255, 0, 127, 0.3);
+}
+#view-apps .deck-button {
+  border: 1.5px solid #ff007f;
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.6), inset 0 0 15px rgba(255, 0, 127, 0.3);
+}
+
+/* GAMING (Violeta/Cian Líquido) */
+.nav-button[data-view="view-gaming"] {
+  border: 1.5px solid #a200ff;
+  box-shadow: 0 0 20px rgba(162, 0, 255, 0.6), inset 0 0 15px rgba(162, 0, 255, 0.3);
+}
+#view-gaming .deck-button {
+  border: 1.5px solid #a200ff;
+  box-shadow: 0 0 20px rgba(162, 0, 255, 0.6), inset 0 0 15px rgba(162, 0, 255, 0.3);
+}
+
+/* STREAMING (Magenta Neón) */
+.nav-button[data-view="view-streaming"] {
+  border: 1.5px solid #ff007f;
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.6), inset 0 0 15px rgba(255, 0, 127, 0.3);
+}
+#view-streaming .deck-button {
+  border: 1.5px solid #ff007f;
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.6), inset 0 0 15px rgba(255, 0, 127, 0.3);
+}
+
+/* ENTRETENIMIENTO (Violeta/Cian Líquido) */
+.nav-button[data-view="view-entertainment"] {
+  border: 1.5px solid #a200ff;
+  box-shadow: 0 0 20px rgba(162, 0, 255, 0.6), inset 0 0 15px rgba(162, 0, 255, 0.3);
+}
+#view-entertainment .deck-button {
+  border: 1.5px solid #a200ff;
+  box-shadow: 0 0 20px rgba(162, 0, 255, 0.6), inset 0 0 15px rgba(162, 0, 255, 0.3);
+}
+
+/* Success / Error flash states (reused by JS) */
+.deck-button.success { box-shadow: 0 10px 40px rgba(255,183,197,0.14); border-color: rgba(255,183,197,0.18); }
+.deck-button.error { box-shadow: 0 10px 40px rgba(255,70,85,0.16); border-color: rgba(255,70,85,0.22); }
+
+/* ==========================
+   Remote trackpad layout
+   ========================== */
+.remote-trackpad { min-height: 600px; width: 100%; display: flex; align-items: center; justify-content: center; }
+.remote-trackpad .label { padding: 12px 18px; }
+
+/* ==========================
+   Ripple (water wave) effect
+   Uses pseudo-element and keyframes to animate on :active
+   ========================== */
+/* Crystal bubble decorative highlights on containers */
+.deck-button::after, .nav-button::after, .remote-button::after {
+  content: '';
+  position: absolute;
+  top: 10%; right: 10%;
+  width: 12px; height: 12px;
+  background: radial-gradient(circle, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
+}
+
+/* ========== WATER RIPPLE: Zen-inspired interactive wave effect ========== */
+@keyframes waterRipple {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.5); }
+  100% { transform: scale(0.97); box-shadow: 0 0 0 25px rgba(0, 240, 255, 0); }
+}
+
+/* Trigger zen ripple on all button interactions */
+.deck-button:active, .nav-button:active, .remote-button:active {
+  animation: waterRipple 450ms ease-out forwards;
+}
+
+/* ==========================
+   Utility + responsive
+   ========================== */
+.hidden { display: none !important; }
+
+@media (max-width: 1024px) { .deck-grid { grid-template-columns: repeat(2, 1fr); } #nav-menu { grid-template-columns: 1fr; } }
+@media (max-width: 640px)  { .deck-grid { grid-template-columns: 1fr; } h1 { font-size: 1.3rem; } }
+
+/* small visual polish for focusable elements */
+button:focus { outline: none; box-shadow: 0 0 0 4px rgba(0,240,255,0.06); }
+
+/* End of theme */
